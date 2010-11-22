@@ -2,6 +2,13 @@ class Apartment
   attr_accessor :name, :rent, :bedrooms, :allow_pets, :allow_felonies,
     :commission, :neighborhood_id
 
+  NEIGHBORHOODS = {
+    :downtown => 1,
+    :uptown => 2,
+    :east_side => 3,
+    :hyde_park => 4
+  }
+
   def initialize(name, opts)
     @name = name
     @rent = opts[:rent]
@@ -17,45 +24,36 @@ class Apartment
   end
 
   def neighborhood
-    if neighborhood_id == 1
-      "Downtown"
-    elsif neighborhood_id == 2
-      "Uptown"
-    elsif neighborhood_id == 3
-      "East Side"
-    elsif neighborhood_id == 4
-      "Hyde Park"
-    else
-      "None Specified"
-    end
+    neighborhood = NEIGHBORHOODS.invert[neighborhood_id].to_s.
+      split('_').collect{|s| s.capitalize}.join(" ")
+    neighborhood.empty? ? "None Specified" : neighborhood
   end
 end
 
 oaks = Apartment.new("The Oaks",
     :rent => 500,
     :bedrooms => 1,
-    :neighborhood_id => 2
+    :neighborhood_id => Apartment::NEIGHBORHOODS[:uptown]
   )
 penthouse = Apartment.new("Penthouse",
     :rent => 800,
     :bedrooms => 1,
     :allow_pets => false,
     :commission => 75,
-    :neighborhood_id => 1
+    :neighborhood_id => Apartment::NEIGHBORHOODS[:downtown]
   )
 elm = Apartment.new("Elm Apartments",
     :rent => 375,
     :bedrooms => 1,
     :allows_felonies => true,
-    :neighborhood_id => 3
+    :neighborhood_id => Apartment::NEIGHBORHOODS[:east_side]
   )
 towers = Apartment.new("The Towers",
     :rent => 650,
-    :bedrooms => 1,
-    :neighborhood_id => 4)
+    :bedrooms => 1)
 
 
 puts oaks.neighborhood # => "Uptown"
 puts penthouse.neighborhood # => "Downtown"
 puts elm.neighborhood # => "East Side"
-puts towers.neighborhood # => "Hyde Park"
+puts towers.neighborhood # => "None Specified"
