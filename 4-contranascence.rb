@@ -3,7 +3,8 @@ class Apartment
     :commission, :neighborhood_id
 
 # the values in this hash must all be distinct otherwise the neighborhood
-# method wouldn't work as expected
+# method wouldn't work as expected. In order to avoid such problems, a test
+# could be written to validate the uniqueness of each value.
   NEIGHBORHOODS = {
     :downtown => 1,
     :uptown => 2,
