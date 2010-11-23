@@ -48,8 +48,8 @@ class Agent
       reject {|apt| apt.rent > client.max_rent + 50 }.
       reject {|apt| apt.bedrooms < client.bedrooms }.
       sort{|apt1,apt2| apt2.commission_check <=> apt1.commission_check }
-
   end
+
 end
 
 apartments = [
