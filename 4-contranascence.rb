@@ -32,3 +32,18 @@ class Apartment
     neighborhood.empty? ? "None Specified" : neighborhood
   end
 end
+
+
+#######################################################
+
+require 'rubygems'
+require 'rspec'
+
+describe Apartment do
+
+  it "has unique neighborhood_ids" do
+    unique_neighbor_id_count = Apartment::NEIGHBORHOODS.values.uniq.count
+    Apartment::NEIGHBORHOODS.keys.count.should == unique_neighbor_id_count
+  end
+
+end
