@@ -1,13 +1,8 @@
+require 'digest'
+
 class Apartment
   attr_accessor :name, :rent, :bedrooms, :allow_pets, :allow_felonies,
-    :commission, :neighborhood_id
-
-  NEIGHBORHOODS = {
-    :downtown => 1,
-    :uptown => 2,
-    :east_side => 3,
-    :hyde_park => 4
-  }
+    :lock
 
   def initialize(name, opts)
     @name = name
@@ -15,97 +10,43 @@ class Apartment
     @bedrooms = opts[:bedrooms]
     @allow_pets = opts[:allow_pets] != false
     @allow_felonies = opts[:allow_felonies] || false
-    @commission = opts[:commission] || 100
-    @neighborhood_id = opts[:neighborhood_id]
+    @lock = opts[:lock]
   end
 
-  def commission_check
-    rent * (commission / 100.to_f)
+  def open_door(encoded_key)
+    if Digest::SHA1.hexdigest(lock) == encoded_key
+      puts "opened!"
+    else
+      puts "got another key?"
+    end
   end
 
-  def neighborhood
-    neighborhood = NEIGHBORHOODS.invert[neighborhood_id].to_s.
-      split('_').collect{|s| s.capitalize}.join(" ")
-    neighborhood.empty? ? "None Specified" : neighborhood
-  end
-end
-
-class Client
-  attr_accessor :name, :max_rent, :bedrooms, :pets, :felony
-
-  def initialize(name, opts)
-    @name = name
-    @max_rent = opts[:max_rent]
-    @bedrooms = opts[:bedrooms]
-    @pets = opts[:pets] || false
-    @felony = opts[:felony] || false
-  end
 end
 
 class Agent
-  attr_accessor :apartment_list
+  attr_accessor :key
 
-  def initialize(apartment_list)
-    @apartment_list = apartment_list
+  def initialize(key)
+    @key = key
   end
 
-  def sort_list_for(client)
-    apartment_list.
-      reject {|apt| client.felony && !apt.allow_felonies }.
-      reject {|apt| client.pets && !apt.allow_pets }.
-      reject {|apt| apt.rent > client.max_rent + 50 }.
-      reject {|apt| apt.bedrooms < client.bedrooms }.
-      sort{|apt1,apt2| apt2.commission_check <=> apt1.commission_check }
-  end
-
-  def print_list_for(client)
-    client_list = sort_list_for(client)
-    puts client.name + ":"
-    client_list.each {|a| puts "#{a.name} - #{a.bedrooms}br"}
-  end
-
-  def highest_commission_for(client)
-    sort_list_for(client).first.commission_check
-  end
-
-  def neighborhood_driving_order(client)
-    sort_list_for(client).collect{|apt| apt.neighborhood}.uniq
+  def encoded_key
+    Digest::SHA1.hexdigest(key)
   end
 
 end
 
-# if an agent decided to print the apartment_list and the
-# neighborhood_driving_order ordered by descending rent, several algorithm
-# changes would have to be made
 
-apartments = [
-  Apartment.new("The Oaks",
-      :rent => 500,
-      :bedrooms => 1,
-      :neighborhood_id => Apartment::NEIGHBORHOODS[:uptown]
-    ),
-  Apartment.new("Penthouse",
-      :rent => 800,
-      :bedrooms => 1,
-      :allow_pets => false,
-      :commission => 75,
-      :neighborhood_id => Apartment::NEIGHBORHOODS[:downtown]
-    ),
-  Apartment.new("Elm Apartments",
-      :rent => 375,
-      :bedrooms => 1,
-      :allows_felonies => true,
-      :neighborhood_id => Apartment::NEIGHBORHOODS[:east_side]
-    ),
-  Apartment.new("The Towers",
-      :rent => 650,
-      :bedrooms => 1)
-]
+oaks = Apartment.new("The Oaks",
+  :rent => 500,
+  :bedrooms => 1,
+  :lock => "key_fits"
+)
 
-agent = Agent.new(apartments)
+agent1 = Agent.new("key_fits")
+agent2 = Agent.new("key_doesnt_fit")
 
-client = Client.new("Joe", :max_rent => 550, :bedrooms => 1)
-
-agent.print_list_for(client)
-puts agent.highest_commission_for(client)
-puts agent.neighborhood_driving_order(client)
+puts "Agent 1:"
+oaks.open_door(agent1.encoded_key)
+puts "Agent 2:"
+oaks.open_door(agent2.encoded_key)
